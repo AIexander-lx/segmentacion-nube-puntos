@@ -53,6 +53,60 @@ El trabajo se reparte en cuatro roles de carga similar. Cada rol tiene un entreg
 - Todos participan en el reporte con su sección y revisan el documento completo.
 - **Quién entrega en Canvas:** _(definir; solo uno del grupo)_.
 
+## Tareas por rol
+
+Marca cada tarea cambiando `[ ]` por `[x]` cuando esté lista y sube el cambio con un commit. Cada rol trabaja en su propia rama (por ejemplo `rol1-datos`) y se integra a `main` con un pull request revisado por al menos otro integrante.
+
+### Rol 1: Datos y preprocesamiento
+- [ ] Descargar el PLY y colocarlo en `data/raw/`.
+- [ ] Cargar la nube con Open3D y confirmar número de puntos, rangos de x, y, z, colores y normales.
+- [ ] Explorar la nube: histogramas de altura, de normales y de color; vistas desde arriba y de costado.
+- [ ] Aplicar submuestreo por voxel y elegir el tamaño del voxel con una justificación.
+- [ ] Limpiar ruido y valores atípicos (por ejemplo, filtro estadístico o por radio).
+- [ ] Construir y escalar las variables para clustering (posición, color, normales; las unidades importan).
+- [ ] Guardar la nube procesada (con sus normales) para que los demás roles la usen, y subir una función que la cargue.
+- [ ] Definir cómo propagar las etiquetas de la nube submuestreada a la nube completa.
+- [ ] Redactar la sección de datos y preprocesamiento del reporte.
+
+### Rol 2: Etapa 1, estructura global
+- [ ] Definir con qué atributos se separan piso, techo y paredes (altura, normales, planaridad).
+- [ ] Segmentar el piso.
+- [ ] Segmentar el techo.
+- [ ] Segmentar las paredes y otras superficies grandes.
+- [ ] Probar al menos dos enfoques (por ejemplo, un método basado en planos y uno de clustering) y comparar.
+- [ ] Entregar a la etapa 2 los puntos restantes con sus etiquetas de la etapa 1.
+- [ ] Capturas de la etapa 1 para el reporte.
+- [ ] Redactar la metodología de la etapa 1 y las decisiones tomadas.
+
+### Rol 3: Etapa 2, objetos
+- [ ] Recibir los puntos restantes de la etapa 1.
+- [ ] Probar al menos tres algoritmos de clustering (por ejemplo DBSCAN o HDBSCAN, k-means, mezclas gaussianas o jerárquico).
+- [ ] Ajustar hiperparámetros (por ejemplo `eps`, `min_samples`, número de clusters) y justificar la elección.
+- [ ] Separar columnas y vigas.
+- [ ] Separar tuberías.
+- [ ] Separar personas y vehículos.
+- [ ] Refinar segmentos (unir fragmentos, descartar ruido).
+- [ ] Capturas de la etapa 2 para el reporte.
+- [ ] Redactar la metodología de la etapa 2 y la comparación de algoritmos.
+
+### Rol 4: Integración, evaluación y reporte
+- [ ] Crear el esqueleto del reporte (PDF) con el ID del grupo y los nombres completos de los cuatro integrantes.
+- [ ] Preparar la función que exporta el PLY coloreado según la clase.
+- [ ] Unir las etapas en un solo script que reproduce todo desde el PLY original.
+- [ ] Verificar que el repositorio se ejecuta desde cero siguiendo este README.
+- [ ] Generar capturas en CloudCompare o MeshLab (vista general y por clase).
+- [ ] Evaluación de los resultados, discusión, limitaciones y conclusiones.
+- [ ] Integrar las secciones de todos los roles en el reporte y revisar el documento completo.
+- [ ] Verificar los tres entregables: PDF, código (ZIP o enlace al repositorio incluido en el reporte) y PLY coloreado.
+- [ ] Entregar en Canvas (solo un integrante), antes del **20 de noviembre, 11:59 pm**.
+
+### Tareas de todos
+- [ ] Asignarse un rol en la tabla de arriba.
+- [ ] Completar el ID del grupo en este README y en el reporte.
+- [ ] Acordar quién entrega en Canvas.
+- [ ] Clonar el repositorio y configurar el entorno con `uv sync`.
+- [ ] Revisar el reporte final antes de entregar.
+
 ## Datos
 
 El PLY no se incluye en el repositorio por su tamaño. Descárgalo desde el enlace de la actividad en Canvas (Google Drive) y colócalo en `data/raw/`.
