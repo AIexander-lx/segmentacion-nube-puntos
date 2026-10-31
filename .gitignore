@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+# Datos pesados: se descargan según el README
+data/raw/*.ply
+data/processed/
+outputs/ply/*.ply
+!outputs/ply/.gitkeep

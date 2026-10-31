@@ -1,0 +1,22 @@
+[project]
+name = "segmentacion-nube-puntos-fabrica"
+version = "0.1.0"
+description = "Segmentación no supervisada de una nube de puntos 3D de una fábrica mediante clustering en múltiples etapas (curso de Machine Learning, UTEC)."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "scikit-learn>=1.4",
+    "open3d>=0.18",
+    "matplotlib>=3.8",
+    "pandas>=2.1",
+    "jupyterlab>=4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/segmentacion"]
