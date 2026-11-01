@@ -1,130 +1,205 @@
-# Segmentación de una nube de puntos de fábrica con clustering
+# SEGMENTACIÓN DE NUBE DE PUNTOS 3D
 
-Actividad grupal del curso de **Machine Learning** (UTEC, ciclo 2026-2), realizada por los grupos de Proyecto 1 y 2.
+> Proyecto académico de Machine Learning: análisis geométrico y segmentación exploratoria de una fábrica escaneada.
 
-## Grupo
+## 1. Descripción y objetivo
 
-- **ID del grupo:** _(completar)_
+El proyecto explora cómo separar estructuras de una escena industrial representada como una nube PLY con posiciones XYZ, colores RGB y normales. La implementación combina preprocesamiento multirresolución, detección geométrica, agrupamiento espacial, descriptores de forma y reglas semánticas interpretables. Los resultados son propuestas experimentales y requieren revisión humana.
+
+## 2. Características
+
+- Visor web local WebGL para las resoluciones original, global y detalle.
+- Vistas RGB, normales, instancias geométricas y propuestas semánticas.
+- Segmentación geométrica con planos RANSAC y componentes espaciales limitadas.
+- Refinamiento V3 experimental por tiles, regiones voxelizadas y compatibilidad de normales.
+- Exportación de PLY, etiquetas NPZ, métricas JSON y figuras reproducibles.
+- Reconstrucción localizada de superficies con Ball Pivoting y Poisson.
+- Pruebas unitarias sobre datos sintéticos; no requieren la fábrica para la mayoría de los casos.
+
+## 3. Captura de la aplicación
+
+No hay una captura verificada del visor incluida en este release. Puedes guardar una desde el botón **Guardar captura** de la aplicación después de cargar los datos locales. Las figuras de experimentos y de la fábrica no se publican aquí porque el permiso de redistribución del dataset no está documentado.
+
+## 4. Arquitectura y carpetas
+
+```text
+main.py                     Launcher del visor local
+web/                        Interfaz HTML, CSS y WebGL
+src/segmentacion/           Lectura, inspección, geometría y pipelines
+scripts/                    CLI reproducibles de inspección y procesamiento
+tests/                      Suite unittest con nubes sintéticas
+data/raw/                   Ubicación recomendada para el PLY local
+outputs/                    Resultados generados; ignorados por Git
+notebooks/                  Espacio para exploración del curso
+report/                     Espacio para el reporte académico
+```
+
+El servidor enlaza solo a `127.0.0.1`. El visor detecta datos y resultados disponibles y muestra avisos cuando faltan. No recalcula la segmentación al abrirse.
+
+## 5. Requisitos
+
+- Python `>=3.10,<3.13`; el entorno de desarrollo usado para esta versión fue Windows x64, Python 3.12.10.
+- [uv](https://docs.astral.sh/uv/) para crear el entorno desde `uv.lock`.
+- Las dependencias declaradas incluyen NumPy, SciPy, scikit-learn, Open3D, Matplotlib, pandas y JupyterLab.
+- Open3D ofrece ruedas para plataformas comunes, pero la instalación debe comprobarse para la versión de Python y arquitectura de cada equipo. La validación completa de este checkout se realizó en Windows.
+
+## 6. Instalar uv
+
+En PowerShell, sigue el instalador oficial de uv o usa:
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+En macOS o Linux:
+
+```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Consulta las instrucciones oficiales antes de ejecutar el instalador si necesitas revisar el script o elegir otro método.
+
+## 7. Obtener la nube PLY
+
+El PLY de la actividad (`FARO_Scan_Full_Sub1_down3_with_normals.ply`, aproximadamente 44.5 MB) se obtiene desde el recurso de Canvas del curso. No se incluye en Git porque el material recibido no contiene una licencia o permiso explícito de redistribución. Descárgalo con acceso al curso y colócalo en `data/raw/` con ese nombre. También se acepta en la raíz del proyecto.
+
+El visor reconoce ambas ubicaciones. Los comandos de procesamiento aceptan una ruta local mediante `--input` o `--original`. El archivo no se mueve ni se copia automáticamente. Si no está disponible, el visor informa que falta la nube y el procesamiento se detiene con un mensaje explícito.
+
+## 8. Instalar dependencias
+
+Desde la raíz del repositorio:
+
+```powershell
+uv sync
+```
+
+```sh
+uv sync
+```
+
+`uv.lock` fija las versiones resueltas. No se necesita copiar ni versionar `.venv/`.
+
+## 9. Abrir la aplicación
+
+El comando principal inicia el servidor en un puerto local libre y abre el navegador:
+
+```powershell
+uv run python main.py
+```
+
+```sh
+uv run python main.py
+```
+
+Opciones útiles: `uv run python main.py --help` y `uv run python main.py --no-browser`. Detén el servidor con `Ctrl+C`.
+
+## 10. Usar las pestañas
+
+- **Original:** elige original, global o detalle; también puedes indicar una ruta a otro PLY local.
+- **Segmentación:** elige RGB, normales, instancias o clases semánticas; selecciona V1/V3 cuando sus artefactos existan, filtra clases y cambia el nivel de detalle.
+- **Reconstrucción:** muestra mallas localizadas disponibles y permite iniciar trabajos explícitos y acotados.
+- En el visor puedes rotar con arrastre, acercar con la rueda, cambiar de cámara, encuadrar, guardar una captura PNG y exportar un PLY cuando esté disponible.
+- Si el panel está plegado, pulsa **Mostrar herramientas**. La información técnica ampliada está bajo el visor.
+
+Las clases se muestran con colores de instancia/clase propios del proyecto. Gris representa `unknown`; no equivale a `other`.
+
+## 11. Procesar desde el PLY
+
+En PowerShell, después de colocar el archivo en `data/raw/`:
+
+```powershell
+$ply = ".\data\raw\FARO_Scan_Full_Sub1_down3_with_normals.ply"
+uv run python scripts/preprocess_cloud.py --input $ply --global-voxel 0.10 --detail-voxel 0.05 --output-dir .\outputs\processed --seed 42
+uv run python scripts/segment_cloud.py --original $ply --global-cloud .\outputs\processed\global.ply --mapping .\outputs\processed\global_mapping.npz --output-dir .\outputs\segmented\global_review_final --seed 42 --eps 0.25 --max-neighbors 64
+uv run python scripts/classify_cloud.py --original $ply --global-cloud .\outputs\processed\global.ply --mapping .\outputs\processed\global_mapping.npz --labels .\outputs\segmented\global_review_final\labels.npz --planes-metrics .\outputs\segmented\global_review_final\metrics.json --output-dir .\outputs\semantic\global_heuristic_v1 --seed 42
+```
+
+Para ejecutar el refinamiento V3 se necesita primero la segmentación y clasificación anteriores. La selección de la componente grande se prepara con el script existente `scripts/analyze_giant.py`; ejecútalo una sola vez en un directorio de resultados limpio. Después:
+
+```powershell
+uv run python scripts/analyze_giant.py
+uv run python scripts/segment_v3.py --original $ply --global-cloud .\outputs\processed\global.ply --mapping .\outputs\processed\global_mapping.npz --semantic-v1 .\outputs\semantic\global_heuristic_v1\semantic_labels.npz --geometry-v1 .\outputs\segmented\global_review_final\labels.npz --giant-indices .\outputs\experiments\giant_component_v3\giant_indices.npz --output-dir .\outputs\semantic\global_local_v3_release --tile-size 2.0 --halo 0.20 --voxel-size 0.20 --normal-angle 35 --min-region-points 20 --max-tile-points 5000 --max-edges 100000 --max-tiles 5000 --max-context-points 2000000 --max-global-points 400000 --max-original-points 2000000 --max-memory-mb 1024 --seed 42
+```
+
+Los CLI aceptan `--help`; por ejemplo, `uv run python scripts/segment_v3.py --help`. Los límites de memoria de los scripts son preflight por estimación y no una restricción impuesta por el sistema operativo. Cada corrida debe usar una carpeta de salida nueva; los scripts evitan sobrescribir resultados existentes.
+
+Para ver una muestra o inspeccionar el PLY:
+
+```powershell
+uv run python scripts/inspect_cloud.py --input $ply --output .\outputs\metrics\inspection.json --figure --sample-size 100000 --seed 42
+uv run python scripts/view_cloud.py --resolution global --color rgb --show
+```
+
+Para reconstruir una ROI —no toda la fábrica— usa una carpeta nueva; Ball Pivoting requiere normales y Poisson puede inferir o cerrar superficies sin observación directa:
+
+```powershell
+uv run python scripts/reconstruct_cloud.py --input .\outputs\processed\global.ply --mapping .\outputs\processed\global_mapping.npz --roi 10.9488 12.4488 2.8843 4.3843 1.1687 2.6688 --output-dir .\outputs\reconstruction\roi_run_001 --max-points 3000 --poisson-depth 5 --seed 42
+```
+
+Los límites, radios BPA y controles disponibles se describen en `uv run python scripts/reconstruct_cloud.py --help`.
+
+## 12. Pruebas unitarias
+
+```powershell
+uv run python -m unittest discover -s tests -v
+```
+
+La suite utiliza nubes pequeñas y fixtures temporales. La versión preparada para este release tiene 72 pruebas aprobadas en el entorno de desarrollo registrado; los tiempos y el resultado pueden variar según el equipo.
+
+## 13. Métodos utilizados
+
+- **Open3D:** lectura y escritura PLY, estructuras de nube y reconstrucción localizada.
+- **Voxelización:** reduce densidad y conserva mapeos entre puntos fuente y celdas.
+- **RANSAC:** detecta planos dominantes geométricos; un plano no se considera automáticamente piso o pared.
+- **Agrupamiento espacial:** componentes de vecindad con límites para controlar memoria; el ruido y los segmentos grandes pueden quedar sin asignar.
+- **PCA y normales:** resumen orientación y forma local; se usan como evidencia geométrica.
+- **Reglas semánticas:** proponen clases interpretables (floor, ceiling, wall, column, beam, pipe, other, unknown). Sus scores no son probabilidades.
+- **BPA/Poisson:** reconstrucción de mallas solo sobre regiones pequeñas; las superficies generadas se consideran inferidas.
+
+## 14. Resultados experimentales registrados
+
+| Medida | Resultado |
+|---|---:|
+| Puntos del PLY original | 1,647,021 |
+| Nube global (voxel 0.10) | 305,071 |
+| Nube detalle (voxel 0.05) | 1,041,806 |
+| V1 con clase propuesta | 8.628% de puntos originales |
+| V1 `unknown` | 91.372% |
+| V3 con clase propuesta | 34.558% de puntos originales |
+| V3 `unknown` | 65.442% |
+| Tiempo V3 observado de extremo a extremo | 30.4 s |
+
+En el resultado guardado, V3 propuso 427,072 puntos originales adicionales en la componente grande y mantuvo intactas las etiquetas conocidas de V1. El tiempo observado corresponde a la máquina de desarrollo, no es una garantía para otros equipos. No se registró una medición de memoria pico válida en el JSON de ese release.
+
+Estas cifras miden **cobertura de reglas heurísticas**, no calidad semántica. No hay anotaciones humanas completas; por tanto, no se reportan accuracy, precisión, recall ni IoU semántico. No se ha demostrado que V3 sea más correcto que V1.
+
+## 15. Limitaciones
+
+- El PLY debe obtenerse desde Canvas; no se comprobó permiso para redistribuirlo públicamente.
+- No existe ground truth semántico humano para evaluar exactitud.
+- El eje vertical Z es una hipótesis de trabajo, no una confirmación universal.
+- La cobertura V3 aumenta las propuestas, pero no demuestra mayor precisión; fronteras de tiles e instancias siguen siendo experimentales.
+- La reconstrucción puede completar huecos o conectar geometría no observada; siempre debe revisarse junto a los puntos.
+- El procesamiento de resolución global puede consumir memoria considerable. No se ejecuta automáticamente al abrir la aplicación.
+- El clean install con `uv sync` no se volvió a ejecutar en esta sesión porque `uv` no estaba en PATH; la suite sí se ejecutó con el Python 3.12.10 del entorno `.venv` existente.
+
+## 16. Autores y grupo
+
+Actividad grupal del curso de Machine Learning de UTEC (ciclo 2026-2). El README previo registra estos integrantes:
+
 - Zheng Chan, Enrique
 - Limaco Porras, Requelmy
 - León Pantaleón, Jobeth Alexander
 - Huamán Huamaní, Josué Yeremi
 
-## La actividad
+El identificador del grupo no estaba consignado en el README de origen; debe completarse por el equipo conforme a la actividad. La autoría y el historial Git del repositorio original se conservan.
 
-| | |
-|---|---|
-| **Disponible** | 29 de octubre de 2026, 7:00 am |
-| **Fecha límite** | **20 de noviembre de 2026, 11:59 pm** |
-| **Intentos** | Ilimitados |
-| **Quién entrega** | Solo **un** integrante del grupo |
+## 17. Fuentes, referencias y atribución
 
-**Dato de entrada.** Una nube de puntos 3D en formato PLY correspondiente a una fábrica (`FARO_Scan_Full_Sub1_down3_with_normals.ply`, ≈1,65 M de puntos). Cada punto tiene posición (x, y, z), color (RGB) y normal (nx, ny, nz).
+- [Open3D: procesamiento de nubes y RANSAC](https://www.open3d.org/docs/latest/tutorial/geometry/pointcloud.html)
+- [Open3D: reconstrucción de superficies, Ball Pivoting y Poisson](https://www.open3d.org/docs/latest/tutorial/geometry/surface_reconstruction.html)
+- [scikit-learn: DBSCAN](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.DBSCAN.html)
+- [uv: instalación](https://docs.astral.sh/uv/getting-started/installation/) y [sincronización del entorno](https://docs.astral.sh/uv/concepts/projects/sync/)
+- [Library of Congress: formato PLY](https://www.loc.gov/preservation/digital/formats/fdd/fdd000501.shtml)
 
-**Objetivo.** Segmentar los objetos presentes (columnas, tuberías, pisos, techos, vigas, personas, vehículos, entre otros). La consigna recomienda **combinar algoritmos de clustering en múltiples etapas**, aprovechando los distintos atributos disponibles.
-
-**Resultado esperado.** Exportar la nube de puntos con un color por punto que represente el segmento identificado.
-
-**Herramientas sugeridas.** Open3D (Python) para leer y exportar nubes de puntos; MeshLab y CloudCompare para visualizar y generar capturas.
-
-### Entregables
-
-1. **Reporte en PDF** con el procedimiento propuesto y capturas de los resultados. Debe incluir el **identificador del grupo** y los **nombres completos de todos los integrantes**.
-2. **Código fuente**, en un ZIP o mediante un enlace a un repositorio incluido en el reporte.
-3. **Nube de puntos coloreada** según las clases encontradas, en formato **PLY**.
-
-## División del trabajo por roles
-
-El trabajo se reparte en cuatro roles de carga similar. Cada rol tiene un entregable de código, una sección del reporte y capturas propias, y cada integrante debe poder explicar su parte y entender las de los demás.
-
-> **Cada integrante se asigna un rol** escribiendo su nombre en la columna "Responsable".
-
-| Rol | Responsable | Responsabilidades | Aporta al código | Aporta al reporte |
-|---|---|---|---|---|
-| **1. Datos y preprocesamiento** | Alexander | Descargar y leer el PLY; explorar posiciones, colores y normales; submuestreo (voxel); limpieza de ruido y valores atípicos; escalado y construcción de las variables que usarán las etapas de clustering; decidir cómo propagar etiquetas a la nube completa. | `src/segmentacion/io.py`, preprocesamiento y características | Descripción de los datos, exploración y preprocesamiento |
-| **2. Etapa 1: estructura global** | _(asignar)_ | Separar las superficies grandes (piso, techo, paredes) usando altura, normales y planaridad; definir los criterios de corte; dejar el resto de puntos listo para la etapa 2. | Módulo de la etapa 1 | Metodología de la etapa 1 y justificación de decisiones |
-| **3. Etapa 2: objetos** | Enrique | Segmentar columnas, tuberías, vigas, personas y vehículos sobre los puntos restantes; probar y comparar algoritmos de clustering (por ejemplo DBSCAN/HDBSCAN, k-means, mezclas gaussianas, jerárquico) y sus hiperparámetros; refinar los segmentos. | Módulo de la etapa 2 | Metodología de la etapa 2, comparación de algoritmos |
-| **4. Integración, evaluación y reporte** | _(asignar)_ | Unir las etapas en un pipeline reproducible (un solo script); asignar los colores por clase y exportar el PLY; generar capturas en CloudCompare/MeshLab; evaluación y discusión de resultados y limitaciones; armar el PDF final y verificar que cumple la consigna. | `scripts/` (pipeline), exportación del PLY | Integración del reporte, resultados, discusión y conclusiones |
-
-### Responsabilidades compartidas
-
-- Revisar los avances de los demás antes de integrar.
-- Probar que el repositorio se ejecuta desde cero siguiendo este README.
-- Todos participan en el reporte con su sección y revisan el documento completo.
-- **Quién entrega en Canvas:** _(definir; solo uno del grupo)_.
-
-## Tareas por rol
-
-Marca cada tarea cambiando `[ ]` por `[x]` cuando esté lista y sube el cambio con un commit. Cada rol trabaja en su propia rama (por ejemplo `rol1-datos`) y se integra a `main` con un pull request revisado por al menos otro integrante.
-
-### Rol 1: Datos y preprocesamiento
-- [ ] Descargar el PLY y colocarlo en `data/raw/`.
-- [ ] Cargar la nube con Open3D y confirmar número de puntos, rangos de x, y, z, colores y normales.
-- [ ] Explorar la nube: histogramas de altura, de normales y de color; vistas desde arriba y de costado.
-- [ ] Aplicar submuestreo por voxel y elegir el tamaño del voxel con una justificación.
-- [ ] Limpiar ruido y valores atípicos (por ejemplo, filtro estadístico o por radio).
-- [ ] Construir y escalar las variables para clustering (posición, color, normales; las unidades importan).
-- [ ] Guardar la nube procesada (con sus normales) para que los demás roles la usen, y subir una función que la cargue.
-- [ ] Definir cómo propagar las etiquetas de la nube submuestreada a la nube completa.
-- [ ] Redactar la sección de datos y preprocesamiento del reporte.
-
-### Rol 2: Etapa 1, estructura global
-- [ ] Definir con qué atributos se separan piso, techo y paredes (altura, normales, planaridad).
-- [ ] Segmentar el piso.
-- [ ] Segmentar el techo.
-- [ ] Segmentar las paredes y otras superficies grandes.
-- [ ] Probar al menos dos enfoques (por ejemplo, un método basado en planos y uno de clustering) y comparar.
-- [ ] Entregar a la etapa 2 los puntos restantes con sus etiquetas de la etapa 1.
-- [ ] Capturas de la etapa 1 para el reporte.
-- [ ] Redactar la metodología de la etapa 1 y las decisiones tomadas.
-
-### Rol 3: Etapa 2, objetos
-- [ ] Recibir los puntos restantes de la etapa 1.
-- [ ] Probar al menos tres algoritmos de clustering (por ejemplo DBSCAN o HDBSCAN, k-means, mezclas gaussianas o jerárquico).
-- [ ] Ajustar hiperparámetros (por ejemplo `eps`, `min_samples`, número de clusters) y justificar la elección.
-- [ ] Separar columnas y vigas.
-- [ ] Separar tuberías.
-- [ ] Separar personas y vehículos.
-- [ ] Refinar segmentos (unir fragmentos, descartar ruido).
-- [ ] Capturas de la etapa 2 para el reporte.
-- [ ] Redactar la metodología de la etapa 2 y la comparación de algoritmos.
-
-### Rol 4: Integración, evaluación y reporte
-- [ ] Crear el esqueleto del reporte (PDF) con el ID del grupo y los nombres completos de los cuatro integrantes.
-- [ ] Preparar la función que exporta el PLY coloreado según la clase.
-- [ ] Unir las etapas en un solo script que reproduce todo desde el PLY original.
-- [ ] Verificar que el repositorio se ejecuta desde cero siguiendo este README.
-- [ ] Generar capturas en CloudCompare o MeshLab (vista general y por clase).
-- [ ] Evaluación de los resultados, discusión, limitaciones y conclusiones.
-- [ ] Integrar las secciones de todos los roles en el reporte y revisar el documento completo.
-- [ ] Verificar los tres entregables: PDF, código (ZIP o enlace al repositorio incluido en el reporte) y PLY coloreado.
-- [ ] Entregar en Canvas (solo un integrante), antes del **20 de noviembre, 11:59 pm**.
-
-### Tareas de todos
-- [ ] Asignarse un rol en la tabla de arriba.
-- [ ] Completar el ID del grupo en este README y en el reporte.
-- [ ] Acordar quién entrega en Canvas.
-- [ ] Clonar el repositorio y configurar el entorno con `uv sync`.
-- [ ] Revisar el reporte final antes de entregar.
-
-## Datos
-
-El PLY no se incluye en el repositorio por su tamaño. Descárgalo desde el enlace de la actividad en Canvas (Google Drive) y colócalo en `data/raw/`.
-
-## Entorno
-
-Las dependencias están declaradas en `pyproject.toml` y fijadas en `uv.lock`, con [uv](https://docs.astral.sh/uv/):
-
-```powershell
-uv sync
-uv run jupyter lab
-```
-
-## Estructura del repositorio
-
-- `src/segmentacion/`: código reutilizable.
-- `notebooks/`: exploración y experimentos.
-- `scripts/`: pipeline completo reproducible.
-- `data/raw/`: nube de puntos original (no versionada).
-- `outputs/`: PLY coloreado y figuras.
-- `report/`: reporte en PDF.
+El dataset se atribuye a la actividad del curso y a su recurso de Canvas; no se redistribuye desde este repositorio. El repositorio original no incluía un archivo `LICENSE`; este release no asigna una licencia nueva. Para reutilizar el código fuera del contexto del curso, solicita autorización a sus autores.

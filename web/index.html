@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Segmentación de nube de puntos 3D</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>SEGMENTACIÓN DE NUBE DE PUNTOS 3D</h1>
+  </header>
+
+  <main id="layout" class="layout">
+    <section class="content" aria-label="Visor 3D">
+      <div class="viewer-heading">
+        <div class="viewer-title"><span class="eyebrow">VISUALIZACIÓN</span><h2 id="viewTitle">Fábrica <span>/ Color RGB original</span></h2></div>
+        <div class="viewer-actions">
+          <div class="camera-controls" aria-label="Vistas de cámara">
+            <button data-view="top">Superior</button><button data-view="front">Frontal</button>
+            <button data-view="side">Lateral</button><button data-view="iso" class="active">Isométrica</button>
+          </div>
+          <button id="toggleTools" class="tool-toggle" type="button" aria-controls="toolsPanel" aria-expanded="true">Ocultar herramientas</button>
+        </div>
+      </div>
+
+      <div class="stage">
+        <canvas id="canvas" aria-label="Vista 3D interactiva"></canvas>
+        <div class="stage-info"><span id="pointCount">Preparando escena…</span><span class="webgl-state"><i></i> WebGL</span></div>
+        <div id="loading" class="loading">Cargando puntos…</div>
+        <div class="stage-tools"><span>Arrastra para rotar · rueda para acercar</span>
+          <div><button id="reset">Centrar / encuadrar</button><button id="snapshot">Guardar captura</button>
+            <a id="exportPly" class="download-button" href="/api/export?result=baseline">Exportar PLY</a></div>
+        </div>
+      </div>
+
+      <section class="how-it-works" aria-labelledby="howTitle">
+        <h2 id="howTitle">¿Cómo funciona?</h2>
+        <p>El sistema analiza una nube de puntos 3D mediante algoritmos de agrupamiento y características geométricas para identificar estructuras de una fábrica. También permite reconstruir superficies a partir de los puntos escaneados y visualizar los resultados en tres dimensiones.</p>
+        <small>Las clases son propuestas geométricas sujetas a validación. Las superficies reconstruidas pueden incluir geometría inferida.</small>
+      </section>
+
+      <section class="statistics" aria-label="Estadísticas resumidas">
+        <div><span>Puntos</span><strong id="statPoints">—</strong><small id="statTotal">Muestra reproducible</small></div>
+        <div><span>Segmentos</span><strong id="statSegments">—</strong><small id="statSegmentsNote">Planos y componentes</small></div>
+        <div><span>Cobertura</span><strong id="statCoverage">—</strong><small id="coverageLabel">V1 · heurística</small></div>
+        <div><span>Tiempo</span><strong id="statTime">—</strong><small id="statTimeNote">Medición guardada</small></div>
+      </section>
+
+      <details class="technical">
+        <summary>Información técnica</summary>
+        <div class="technical-grid">
+          <p id="message" class="message" role="status">Los segmentos geométricos y las clases semánticas representan resultados distintos.</p>
+          <article><h3>Clases semánticas</h3><div id="classSummary" class="class-summary">Elige una vista semántica para consultar la leyenda.</div></article>
+          <article><h3>Regiones y mallas disponibles</h3><div id="regionList" class="region-list">Buscando mallas y regiones…</div></article>
+          <article><h3>Procesamiento</h3><div id="job" class="job" aria-live="polite">Sin procesamiento activo</div></article>
+        </div>
+      </details>
+    </section>
+
+    <button id="drawerBackdrop" class="drawer-backdrop" type="button" aria-label="Cerrar herramientas"></button>
+
+    <aside id="toolsPanel" class="sidebar" aria-label="Herramientas del visor">
+      <nav class="tabs" aria-label="Secciones de la aplicación">
+        <button class="tab active" data-tab="original">Original</button>
+        <button class="tab" data-tab="segmentation">Segmentación</button>
+        <button class="tab" data-tab="reconstruction">Reconstrucción</button>
+      </nav>
+
+      <section class="tab-panel active" data-tab-panel="original">
+        <h2>Datos de entrada</h2>
+        <label>Nube<select id="resolution">
+          <option value="original">Original · 1.65 M</option>
+          <option value="global" selected>Global · 0.10</option>
+          <option value="detail">Detalle · 0.05</option>
+        </select></label>
+        <label>Archivo PLY local<input id="inputPath" placeholder="Ruta completa del archivo"></label>
+        <button id="openInput" class="button secondary">Cargar archivo</button>
+        <button id="restoreInput" class="text-button">Volver a la nube del proyecto</button>
+        <p class="help">La ruta se usa solo en esta sesión. Las etiquetas requieren los mapeos del proyecto.</p>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="segmentation" hidden>
+        <h2>Representación</h2>
+        <label>Vista<select id="mode">
+          <option value="rgb">Color RGB original</option>
+          <option value="normals">Orientación de normales</option>
+          <option value="instances">Instancias geométricas</option>
+          <option value="semantic">Clases semánticas</option>
+        </select></label>
+        <label>Resultado<select id="result"><option value="baseline">Baseline V1</option></select></label>
+        <label>Nivel de detalle<select id="limit">
+          <option value="65000">Rápido · 65 mil puntos</option>
+          <option value="150000">Equilibrado · 150 mil puntos</option>
+          <option value="300000" selected>Detallado · 300 mil puntos</option>
+          <option value="500000">Máximo · 500 mil puntos</option>
+        </select></label>
+        <label class="range-label">Tamaño de punto <output id="pointSizeValue">2</output>
+          <input id="pointSize" type="range" min="1" max="6" step="0.5" value="2">
+        </label>
+        <label class="check"><input id="hideUnknown" type="checkbox"> Ocultar puntos desconocidos</label>
+        <button id="load" class="button primary">Actualizar visualización</button>
+        <h3 class="subhead">Clases visibles</h3>
+        <div id="legend" class="legend"></div>
+        <p class="help">Las clases son propuestas geométricas heurísticas; no son etiquetas verificadas.</p>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="reconstruction" hidden>
+        <h2>Superficies reconstruidas</h2>
+        <label>Región y método<select id="mesh"><option value="">Sin malla</option></select></label>
+        <label class="check"><input id="showMesh" type="checkbox"> Mostrar superficie seleccionada</label>
+        <p class="notice">Las mallas son geometría inferida. Poisson puede cerrar huecos sin evidencia observada.</p>
+        <h3 class="subhead">Ejecutar análisis</h3>
+        <label>ROI XYZ <small>xmin xmax ymin ymax zmin zmax</small>
+          <input id="roi" value="10.9488 12.4488 2.8843 4.3843 1.1687 2.6688">
+        </label>
+        <button id="reconJob" class="button secondary">Reconstruir región ROI</button>
+        <button id="sampleJob" class="button secondary">Diagnóstico geométrico de muestra</button>
+        <button id="hybridJob" class="button secondary">Regiones híbridas en ROI</button>
+        <button id="semanticV3Job" class="button secondary">Refinar componente desconocida · V3</button>
+        <button id="fullJob" class="button secondary">Segmentar nube global</button>
+      </section>
+    </aside>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
