@@ -120,6 +120,18 @@ uv sync
 uv run jupyter lab
 ```
 
+### Preprocesamiento (Rol 1)
+
+Con el PLY en `data/raw/`, estos scripts reproducen la nube procesada (los datos procesados no se versionan; se regeneran en menos de un minuto):
+
+```powershell
+uv run python scripts/01_explorar.py                 # estadísticas y figuras de exploración
+uv run python scripts/02_preprocesar.py              # voxel 0.08 m + filtro de ruido + variables
+uv run python scripts/03_validar_preprocesamiento.py # propagación de etiquetas y figuras de control
+```
+
+`02_preprocesar.py` crea `data/processed/nube_procesada.npz` con los puntos, las normales, el color, la matriz de variables (`features`, sin escalar, y `features_std`, estandarizada) y los índices para propagar etiquetas a la nube completa (`propagate_labels` en `src/segmentacion/preprocess.py`). Los parámetros (`--voxel`, `--radio`, `--min-vecinos`, `--k`) se pueden cambiar por línea de comandos.
+
 ## Estructura del repositorio
 
 - `src/segmentacion/`: código reutilizable.
