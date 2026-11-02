@@ -8,11 +8,14 @@ dependencies = [
     "numpy>=1.26",
     "scipy>=1.11",
     "scikit-learn>=1.4",
-    "open3d>=0.18",
     "matplotlib>=3.8",
     "pandas>=2.1",
     "jupyterlab>=4.0",
 ]
+
+[project.optional-dependencies]
+# Solo para visualizar o convertir nubes con Open3D; el pipeline no lo necesita.
+viz = ["open3d>=0.18"]
 
 [build-system]
 requires = ["hatchling"]
