@@ -1,6 +1,4 @@
-# Datos y preprocesamiento (borrador, Rol 1)
-
-> Borrador para el reporte. Revisar, adaptar al estilo del grupo y verificar cada cifra ejecutando `scripts/01_explorar.py`, `scripts/02_preprocesar.py` y `scripts/03_validar_preprocesamiento.py`. Figuras: `outputs/figures/01_alturas_normales_color.png`, `02_vistas.png` y `03_variables_locales_y_ruido.png`.
+# Datos y preprocesamiento (borrador)
 
 ## 1. Descripción de los datos
 
