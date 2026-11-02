@@ -5,6 +5,9 @@ Los vecindarios se calculan con cKDTree (SciPy), sin depender de Open3D.
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
+from pathlib import Path
+
 import numpy as np
 from scipy.spatial import cKDTree
 
@@ -121,3 +124,50 @@ def propagate_labels(labels_kept: np.ndarray, kept_to_voxel: np.ndarray,
     per_voxel = np.full(n_voxels, unlabeled, dtype=np.int64)
     per_voxel[kept_to_voxel] = labels_kept
     return per_voxel[inverse]
+
+
+@dataclass
+class ProcessedCloud:
+    """Nube procesada lista para clustering (resultado de scripts/02_preprocesar.py)."""
+
+    xyz: np.ndarray            # (n,3) posición en metros
+    rgb: np.ndarray            # (n,3) uint8
+    normals: np.ndarray        # (n,3) normales unitarias
+    features: np.ndarray       # (n,13) variables sin escalar, orden de feature_names
+    features_std: np.ndarray   # (n,13) variables estandarizadas
+    feature_names: list[str]
+    mean: np.ndarray           # media y desviación usadas al estandarizar
+    std: np.ndarray
+    inverse: np.ndarray        # (n_original,) voxel de cada punto original
+    kept_to_voxel: np.ndarray  # (n,) voxel de cada punto procesado
+    n_voxels: int
+    params: dict               # voxel, radio, min_vecinos, k
+
+    def __len__(self) -> int:
+        return len(self.xyz)
+
+    def feature(self, name: str, standardized: bool = False) -> np.ndarray:
+        """Columna de una variable por nombre, p. ej. cloud.feature("planaridad")."""
+        col = self.feature_names.index(name)
+        return (self.features_std if standardized else self.features)[:, col]
+
+    def propagate(self, labels: np.ndarray, unlabeled: int = -1) -> np.ndarray:
+        """Etiquetas de la nube procesada -> todos los puntos de la nube original."""
+        return propagate_labels(labels, self.kept_to_voxel, self.inverse,
+                                self.n_voxels, unlabeled)
+
+
+def load_processed(path: str | Path = "data/processed/nube_procesada.npz") -> ProcessedCloud:
+    """Carga la nube procesada. Si no existe, generarla con scripts/02_preprocesar.py."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"{path} no existe. Ejecuta: uv run python scripts/02_preprocesar.py")
+    z = np.load(path)
+    return ProcessedCloud(
+        xyz=z["xyz"], rgb=z["rgb"], normals=z["normals"],
+        features=z["features"], features_std=z["features_std"],
+        feature_names=[str(s) for s in z["feature_names"]],
+        mean=z["mean"], std=z["std"], inverse=z["inverse"],
+        kept_to_voxel=z["kept_to_voxel"], n_voxels=int(z["n_voxels"]),
+        params={k: float(z[k]) for k in ("voxel", "radio", "min_vecinos", "k")},
+    )
