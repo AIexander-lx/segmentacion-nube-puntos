@@ -95,7 +95,7 @@ def build_proposals(
 ) -> tuple[np.ndarray, list[dict[str, Any]]]:
     normals = np.asarray(global_cloud.normals) if global_cloud.has_normals() else None
     colors = np.asarray(global_cloud.colors) if global_cloud.has_colors() else None
-    scene_bounds = (points.min(axis=0), points.max(axis=0))
+    scene_bounds = (np.percentile(points, 0.1, axis=0), np.percentile(points, 99.9, axis=0))  # robusto a puntos aislados
     semantic = np.full(len(points), CLASS_IDS["unknown"], dtype=np.int8)
     records = []
 
