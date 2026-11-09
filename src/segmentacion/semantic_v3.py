@@ -282,7 +282,7 @@ def refine_component(
     accepted_edges = 0
     rejected_edges = 0
     started_regions = time.perf_counter()
-    scene_bounds = (np.min(xyz, axis=0), np.max(xyz, axis=0))
+    scene_bounds = (np.percentile(xyz, 0.1, axis=0), np.percentile(xyz, 99.9, axis=0))  # robusto a puntos aislados
     radius = int(np.ceil(halo / tile_size))
 
     for tile_number, key in enumerate(unique_keys):
