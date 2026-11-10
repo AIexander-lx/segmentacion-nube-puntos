@@ -105,6 +105,18 @@ Las clases se muestran con colores de instancia/clase propios del proyecto. Gris
 
 ## 11. Procesar desde el PLY
 
+### Opción rápida: un solo comando
+
+Con el PLY en `data/raw/`, desde la raíz del repositorio:
+
+```powershell
+uv run python scripts/run_pipeline.py --input .\data\raw\FARO_Scan_Full_Sub1_down3_with_normals.ply
+```
+
+`scripts/run_pipeline.py` encadena en orden preprocesamiento, planos RANSAC y clustering, clasificación V1, componente grande y refinamiento V3 (los pasos detallados de abajo), con semilla 42. Deja el PLY coloreado por clase en `outputs/ply/fabrica_segmentada.ply` y el porcentaje de puntos por clase en `outputs/pipeline_summary.json`. Si ya existen resultados de una corrida anterior, añade `--force` para borrarlos y repetir. Tarda alrededor de un minuto (≈51 s en la corrida registrada). Con `--skip-v3` se detiene tras V1.
+
+### Paso a paso
+
 En PowerShell, después de colocar el archivo en `data/raw/`:
 
 ```powershell
@@ -163,13 +175,28 @@ La suite utiliza nubes pequeñas y fixtures temporales. La versión preparada pa
 | Puntos del PLY original | 1,647,021 |
 | Nube global (voxel 0.10) | 305,071 |
 | Nube detalle (voxel 0.05) | 1,041,806 |
-| V1 con clase propuesta | 8.628% de puntos originales |
-| V1 `unknown` | 91.372% |
-| V3 con clase propuesta | 34.558% de puntos originales |
-| V3 `unknown` | 65.442% |
-| Tiempo V3 observado de extremo a extremo | 30.4 s |
+| V1 con clase propuesta | 12.796% de puntos originales |
+| V1 `unknown` | 87.204% |
+| V3 con clase propuesta | 42.806% de puntos originales |
+| V3 `unknown` | 57.194% |
+| Tiempo del pipeline completo (`run_pipeline.py`) | 50.8 s |
 
-En el resultado guardado, V3 propuso 427,072 puntos originales adicionales en la componente grande y mantuvo intactas las etiquetas conocidas de V1. El tiempo observado corresponde a la máquina de desarrollo, no es una garantía para otros equipos. No se registró una medición de memoria pico válida en el JSON de ese release.
+Distribución de clases del resultado final (V3), sobre los 1,647,021 puntos originales:
+
+| Clase | Puntos | % |
+|---|---:|---:|
+| floor | 134,991 | 8.196 |
+| ceiling | 155,897 | 9.465 |
+| wall | 9,769 | 0.593 |
+| column | 124,893 | 7.583 |
+| beam | 247,040 | 14.999 |
+| pipe | 26,582 | 1.614 |
+| other | 5,845 | 0.355 |
+| unknown | 942,004 | 57.194 |
+
+En el resultado guardado, V3 propuso 494,260 puntos originales adicionales respecto a V1 y mantuvo intactas las etiquetas conocidas de V1. El tiempo observado corresponde a un entorno de ejecución concreto, no es una garantía para otros equipos. No se registró una medición de memoria pico válida en el JSON.
+
+**Corrección respecto a la versión anterior de esta sección.** La versión previa reportaba techo 0 % y 65.442 % `unknown` en V3 (V1: 91.372 % `unknown`). La causa era que la altura relativa de cada región se calculaba con el máximo de z de la nube. Unos 14 puntos aislados llegan a z ≈ 14.5 m mientras el techo real está en z ≈ 9 m, de modo que el techo nunca superaba el umbral de altura relativa de 0.78 y no se reconocía. Ahora `scripts/classify_cloud.py` y `src/segmentacion/semantic_v3.py` calculan los límites de escena con los percentiles 0.1 y 99.9 de las coordenadas. El techo pasa de 0 % a 9.465 %, y `unknown` baja de 65.442 % a 57.194 %.
 
 Estas cifras miden **cobertura de reglas heurísticas**, no calidad semántica. No hay anotaciones humanas completas; por tanto, no se reportan accuracy, precisión, recall ni IoU semántico. No se ha demostrado que V3 sea más correcto que V1.
 
@@ -180,6 +207,8 @@ Estas cifras miden **cobertura de reglas heurísticas**, no calidad semántica. 
 - El eje vertical Z es una hipótesis de trabajo, no una confirmación universal.
 - La cobertura V3 aumenta las propuestas, pero no demuestra mayor precisión; fronteras de tiles e instancias siguen siendo experimentales.
 - La reconstrucción puede completar huecos o conectar geometría no observada; siempre debe revisarse junto a los puntos.
+- Más de la mitad de los puntos (57.194 %) queda como `unknown`, y el vocabulario de clases no incluye personas ni vehículos.
+- Las reglas usan umbrales fijados a mano (p. ej. altura relativa del 22 % y 78 %); dependen de la hipótesis del eje vertical y de la densidad de la nube.
 - El procesamiento de resolución global puede consumir memoria considerable. No se ejecuta automáticamente al abrir la aplicación.
 - El clean install con `uv sync` no se volvió a ejecutar en esta sesión porque `uv` no estaba en PATH; la suite sí se ejecutó con el Python 3.12.10 del entorno `.venv` existente.
 
