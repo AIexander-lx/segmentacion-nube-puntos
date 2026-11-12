@@ -1,0 +1,268 @@
+[
+ {
+  "metodo": "kmeans",
+  "param": 2,
+  "silhouette": 0.20652670025710254,
+  "sil_std": 0.002232813174111693,
+  "davies_bouldin": 1.8151312219590716,
+  "tiempo_s": 0.040436744689941406
+ },
+ {
+  "metodo": "kmeans",
+  "param": 3,
+  "silhouette": 0.19841488280125805,
+  "sil_std": 0.001565749980837036,
+  "davies_bouldin": 1.724671142654851,
+  "tiempo_s": 0.041508754094441734
+ },
+ {
+  "metodo": "kmeans",
+  "param": 4,
+  "silhouette": 0.19503584959946155,
+  "sil_std": 0.0022393597478822,
+  "davies_bouldin": 1.6804229204846202,
+  "tiempo_s": 0.06265838940938313
+ },
+ {
+  "metodo": "kmeans",
+  "param": 5,
+  "silhouette": 0.21824040274187795,
+  "sil_std": 0.0006979980947092588,
+  "davies_bouldin": 1.5914894245302256,
+  "tiempo_s": 0.07971254984537761
+ },
+ {
+  "metodo": "kmeans",
+  "param": 6,
+  "silhouette": 0.22693299057102848,
+  "sil_std": 0.009672717794644275,
+  "davies_bouldin": 1.5600525688323537,
+  "tiempo_s": 0.10966960589090984
+ },
+ {
+  "metodo": "kmeans",
+  "param": 7,
+  "silhouette": 0.24172617533609306,
+  "sil_std": 0.0052233343412489445,
+  "davies_bouldin": 1.529839313504665,
+  "tiempo_s": 0.09778674443562825
+ },
+ {
+  "metodo": "kmeans",
+  "param": 8,
+  "silhouette": 0.25420966201594647,
+  "sil_std": 0.0036630639168309283,
+  "davies_bouldin": 1.4712944668742338,
+  "tiempo_s": 0.08842142422993977
+ },
+ {
+  "metodo": "kmeans",
+  "param": 9,
+  "silhouette": 0.2682222302204811,
+  "sil_std": 0.0034076163787224046,
+  "davies_bouldin": 1.3821798580520221,
+  "tiempo_s": 0.09123849868774414
+ },
+ {
+  "metodo": "kmeans",
+  "param": 10,
+  "silhouette": 0.2755092482700328,
+  "sil_std": 0.0034750665516368605,
+  "davies_bouldin": 1.3313964748755691,
+  "tiempo_s": 0.09877427419026692
+ },
+ {
+  "metodo": "gmm",
+  "param": 2,
+  "silhouette": 0.15374643485913284,
+  "sil_std": 0.042031718378671916,
+  "davies_bouldin": 1.9492735766125637,
+  "tiempo_s": 0.13844664891560873
+ },
+ {
+  "metodo": "gmm",
+  "param": 3,
+  "silhouette": 0.13531248545593533,
+  "sil_std": 0.006434261754963459,
+  "davies_bouldin": 1.9244710075906,
+  "tiempo_s": 0.2277681032816569
+ },
+ {
+  "metodo": "gmm",
+  "param": 4,
+  "silhouette": 0.12187791709174667,
+  "sil_std": 0.0029061099991111285,
+  "davies_bouldin": 1.8287851182133341,
+  "tiempo_s": 0.23019838333129883
+ },
+ {
+  "metodo": "gmm",
+  "param": 5,
+  "silhouette": 0.09225663481323083,
+  "sil_std": 0.001383017875047054,
+  "davies_bouldin": 2.3325668942184064,
+  "tiempo_s": 0.4058525562286377
+ },
+ {
+  "metodo": "gmm",
+  "param": 6,
+  "silhouette": 0.10076743408772985,
+  "sil_std": 0.0015721396920559088,
+  "davies_bouldin": 2.4371530439713127,
+  "tiempo_s": 0.4322651227315267
+ },
+ {
+  "metodo": "gmm",
+  "param": 7,
+  "silhouette": 0.09521107805418598,
+  "sil_std": 0.008199151625687635,
+  "davies_bouldin": 2.4760808321030936,
+  "tiempo_s": 0.47600094477335614
+ },
+ {
+  "metodo": "gmm",
+  "param": 8,
+  "silhouette": 0.07755010077577996,
+  "sil_std": 0.010022573870893992,
+  "davies_bouldin": 2.4386743494930014,
+  "tiempo_s": 0.5399298667907715
+ },
+ {
+  "metodo": "gmm",
+  "param": 9,
+  "silhouette": 0.09292205971290685,
+  "sil_std": 0.0038357626937965687,
+  "davies_bouldin": 2.2203094888319224,
+  "tiempo_s": 0.6770298480987549
+ },
+ {
+  "metodo": "gmm",
+  "param": 10,
+  "silhouette": 0.06924424232522175,
+  "sil_std": 0.00649915126864364,
+  "davies_bouldin": 2.4814012912952,
+  "tiempo_s": 0.731978178024292
+ },
+ {
+  "metodo": "ward",
+  "param": 2,
+  "silhouette": 0.17321286227849528,
+  "sil_std": 0.006612819455627961,
+  "davies_bouldin": 2.1056845391324717,
+  "tiempo_s": 3.4457057317097983
+ },
+ {
+  "metodo": "ward",
+  "param": 3,
+  "silhouette": 0.17079225769674722,
+  "sil_std": 0.004147476893663698,
+  "davies_bouldin": 1.7135151138607336,
+  "tiempo_s": 3.3185147444407144
+ },
+ {
+  "metodo": "ward",
+  "param": 4,
+  "silhouette": 0.15919638039474873,
+  "sil_std": 0.018271865698430978,
+  "davies_bouldin": 1.809302937837132,
+  "tiempo_s": 3.4349164962768555
+ },
+ {
+  "metodo": "ward",
+  "param": 5,
+  "silhouette": 0.1772402478451991,
+  "sil_std": 0.015457946856302139,
+  "davies_bouldin": 1.836145923527975,
+  "tiempo_s": 3.5722947120666504
+ },
+ {
+  "metodo": "ward",
+  "param": 6,
+  "silhouette": 0.17825542467862418,
+  "sil_std": 0.028165143315607127,
+  "davies_bouldin": 1.7141867021719512,
+  "tiempo_s": 3.479341189066569
+ },
+ {
+  "metodo": "ward",
+  "param": 7,
+  "silhouette": 0.19308893395444657,
+  "sil_std": 0.02614069094553498,
+  "davies_bouldin": 1.6777882558464474,
+  "tiempo_s": 3.708441972732544
+ },
+ {
+  "metodo": "ward",
+  "param": 8,
+  "silhouette": 0.18277411469748825,
+  "sil_std": 0.006895765645730554,
+  "davies_bouldin": 1.6318514315197525,
+  "tiempo_s": 3.5189667542775473
+ },
+ {
+  "metodo": "ward",
+  "param": 9,
+  "silhouette": 0.19280846797969287,
+  "sil_std": 0.008044633419708637,
+  "davies_bouldin": 1.5380106601672583,
+  "tiempo_s": 3.5219260851542153
+ },
+ {
+  "metodo": "ward",
+  "param": 10,
+  "silhouette": 0.20357215868912645,
+  "sil_std": 0.008047230503486292,
+  "davies_bouldin": 1.6151527543979138,
+  "tiempo_s": 3.5261736710866294
+ },
+ {
+  "metodo": "dbscan",
+  "param": 0.5,
+  "silhouette": 0.3399210253118599,
+  "sil_std": 0.06727937199886937,
+  "davies_bouldin": 0.6768832085730638,
+  "tiempo_s": 0.359114408493042,
+  "n_clusters": 18.333333333333332,
+  "ruido": 0.6101333333333333
+ },
+ {
+  "metodo": "dbscan",
+  "param": 0.75,
+  "silhouette": 0.16100406170370476,
+  "sil_std": 0.07211623341887649,
+  "davies_bouldin": 1.0116902949735023,
+  "tiempo_s": 0.4902905623118083,
+  "n_clusters": 14.333333333333334,
+  "ruido": 0.4183333333333333
+ },
+ {
+  "metodo": "dbscan",
+  "param": 1.0,
+  "silhouette": -0.0511367599755806,
+  "sil_std": 0.09307320449830007,
+  "davies_bouldin": 1.1049218132191496,
+  "tiempo_s": 0.6197446982065836,
+  "n_clusters": 8.666666666666666,
+  "ruido": 0.20299999999999999
+ },
+ {
+  "metodo": "dbscan",
+  "param": 1.5,
+  "silhouette": NaN,
+  "sil_std": NaN,
+  "davies_bouldin": NaN,
+  "tiempo_s": 0.9962325096130371,
+  "n_clusters": 1.0,
+  "ruido": 0.015266666666666666
+ },
+ {
+  "metodo": "dbscan",
+  "param": 2.0,
+  "silhouette": NaN,
+  "sil_std": NaN,
+  "davies_bouldin": NaN,
+  "tiempo_s": 1.3965034484863281,
+  "n_clusters": 1.0,
+  "ruido": 0.0007333333333333333
+ }
+]
